@@ -1,0 +1,54 @@
+# 依赖
+node_modules/
+npm-debug.log*
+yarn-lock.json
+
+# 环境变量（敏感信息）
+.env
+.env.local
+.env.*.local
+.env.production
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.sublime-project
+*.sublime-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+
+# 构建输出
+dist/
+build/
+.nuxt/
+
+# 日志
+*.log
+logs/
+
+# 临时文件
+tmp/
+temp/
+*.tmp
+
+# 测试覆盖率
+coverage/
+.nyc_output/
+
+# 调试
+.debug
+debug.log
+
+# 构建缓存
+.cache/
+.eslintcache
+
+# 项目特定
+backend/src/uploads/
+!backend/src/uploads/.gitkeep
+backups/
