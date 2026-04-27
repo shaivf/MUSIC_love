@@ -230,21 +230,29 @@ const getSongQueryParams = () => {
     pageSize: pagination.pageSize
   }
 
+  // 仅当输入框有值时才添加过滤参数，避免干扰默认列表展示
+  // 向 API 请求参数中添加上传者邮箱筛选条件
+  /*
+  仅当用户在输入框中输入了邮箱时才执行
+  防止空值加入请求参数，避免后端无效查询
+  */
   if (uploaderEmailFilter.value) {
-    params.uploaderEmail = uploaderEmailFilter.value.trim()
+    params.uploaderEmail = uploaderEmailFilter.value.trim()   // .trim()去掉前后空格，保证请求干净
   }
 
   return params
 }
 
 const loadSongs = async ({ resetPage = false, allowAdjustPage = true } = {}) => {
-  const requestId = ++latestSongsRequestId.value
+  const requestId = ++latestSongsRequestId.value    // 生成一个新的请求 ID，确保每次调用 loadSongs 都有唯一的 ID
   try {
     if (resetPage) pagination.page = 1
     loading.value = true
     const response = await getSongs(getSongQueryParams())
 
     // 仅处理最新请求，避免慢请求覆盖新结果
+    // 异步返回时判断请求 ID 是否最新，如果不是则直接返回不处理结果
+    // 功能作用：动态渲染歌曲列表、支持分页、搜索、防止并发覆盖
     if (requestId !== latestSongsRequestId.value) return
 
     // 响应格式: { success: true, code: 200, data: { total, page, limit, songs }, message }
@@ -279,6 +287,12 @@ const loadSongs = async ({ resetPage = false, allowAdjustPage = true } = {}) => 
   }
 }
 
+// 搜索与筛选防抖；输入防抖，避免每次按键都发送请求
+/*
+实现原理：
+    每次输入清除之前定时器
+    延迟 SEARCH_DEBOUNCE_MS 后调用 loadSongs({ resetPage: true })
+*/
 const scheduleReloadWithFilter = () => {
   if (searchDebounceTimer.value) {
     clearTimeout(searchDebounceTimer.value)
@@ -289,15 +303,15 @@ const scheduleReloadWithFilter = () => {
 }
 
 const handleSearch = () => {
-  scheduleReloadWithFilter()
+  scheduleReloadWithFilter()     // 输入防抖，避免每次按键都发送请求
 }
 
 const handleUploaderEmailInput = () => {
-  scheduleReloadWithFilter()
+  scheduleReloadWithFilter()       // 输入防抖，避免每次按键都发送请求
 }
 
 const handlePageChange = async () => {
-  await loadSongs()
+  await loadSongs()        // 分页变化时加载对应页数据，保持分页与数据同步
 }
 
 const handlePageSizeChange = async () => {
@@ -336,6 +350,7 @@ const toggleFavorite = async (song) => {
     return
   }
 
+  // 防止重复点击导致多个请求，添加加载状态，避免重复点击导致多个请求
   if (favoriteLoadingIds.value.includes(song.id)) return
   favoriteLoadingIds.value.push(song.id)
 
@@ -399,7 +414,7 @@ const handleUpload = async () => {
     if (response.success) {
       uploadProgress.value = 100
       ElMessage.success('上传成功')
-      showUploadDialog.value = false
+      showUploadDialog.value = false    // 控制上传音乐对话框的显示和隐藏
       resetUploadForm()
       await loadSongs({ resetPage: true })
     } else {
@@ -426,6 +441,8 @@ const resetUploadForm = () => {
   uploadRef.value?.clearFiles()
 }
 
+// 页面初始加载歌曲列表和用户收藏列表
+// 生命周期钩子
 onMounted(() => {
   const bootstrap = async () => {
     await loadSongs()
@@ -434,6 +451,7 @@ onMounted(() => {
   bootstrap()
 })
 
+// 清除搜索防抖定时器，避免内存泄漏
 onBeforeUnmount(() => {
   if (searchDebounceTimer.value) {
     clearTimeout(searchDebounceTimer.value)

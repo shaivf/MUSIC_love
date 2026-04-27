@@ -56,6 +56,7 @@ router.beforeEach(async (to, from, next) => {
     }
   }
 
+  // 否则，如果访问需要登录的页面但用户未认证，重定向到登录页
   // 需要登录的页面
   if (to.meta.requiresAuth && !userStore.isAuthenticated) {
     ElMessage.warning('请先登录')

@@ -13,6 +13,8 @@ import { userApi } from '@/api'
 */
 // 外部调用：const userStore = useUserStore()
 // 是创建一个实例
+// 'user' 是 Pinia Store 的唯一 ID（标识符）
+// 它用于全局注册和查找这个 Store 实例
 export const useUserStore = defineStore('user', () => {
   const token = ref(localStorage.getItem('token') || '')  
   // 保存当前登录 token。 
